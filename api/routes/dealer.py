@@ -1,19 +1,18 @@
 from http import HTTPStatus
 from flask import Blueprint, json
 from flasgger import swag_from
-from api.models.dealer import DealerModel
-from api.schemas.dealer import DealerSchema
+from database.db import get_db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import requests
 
 dealer_api = Blueprint('dealer', __name__)
 
-@dealer_api.route('/new', methods=['POST'])
+@dealer_api.route('/new', methods=['GET'])
 @swag_from({
     'responses': {
         HTTPStatus.OK.value: {
-            'description': 'Valor do Dealer',
-            'schema' : DealerSchema
+            'description': 'Valor do Dealer'
         }
     }
 })
@@ -24,7 +23,21 @@ def dealer():
     API do desafio Backend do O Boticario
     ---
     """
-    data = {}
+    db = get_db()
+    error = None
+
+    db.execute(
+        '''INSERT INTO user (username, password)
+            VALUES (?, ?)''', ('Mobeka', generate_password_hash('password'))
+    )
+    db.commit()
+
+    data = {
+        'name': 'Maria Marcia',
+        'cpf': '123112312323',
+        'email': 'maria@gmail.com',
+        'password': 'password'
+    }
     result = DealerModel(data)
     return DealerSchema().dump(result), 200
 
@@ -43,6 +56,20 @@ def valid():
     ---
     ---
     """
+    db = get_db()
+    error = None
+
+    retorno = db.execute(
+        'SELECT * FROM user'
+    ).fetchall()
+    
+    if retorno is None:
+        print('tabela vazia')
+    else:
+        print('tem algo aqui')
+        for line in retorno:
+            print(line, line[0], line[1], line[2])
+
     data = {
         'cpf': '12312312332',
         'password': 'password'

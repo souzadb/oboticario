@@ -1,8 +1,6 @@
 from http import HTTPStatus
 from flask import Blueprint, json
 from flasgger import swag_from
-from api.models.sale import SaleModel
-from api.schemas.sale import SaleSchema
 
 sale_api = Blueprint('sale', __name__)
 
