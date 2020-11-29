@@ -1,4 +1,4 @@
-class NewSaleModel(object):
+class SaleModel(object):
     def __init__(self, sale):
         self.cod = sale['cod']
         self.value = sale['value']

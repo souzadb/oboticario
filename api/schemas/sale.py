@@ -1,7 +1,7 @@
 from flask_marshmallow import Schema
 from marshmallow.fields import Str, Int
 
-class NewSaleSchema(Schema):
+class SaleSchema(Schema):
     class Meta:
         fields = ["cod", "value", "date", "cpf", "status"]
 
