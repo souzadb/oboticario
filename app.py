@@ -26,7 +26,7 @@ def create_app():
     from database import db
     db.init_app(app)
 
-    # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
     return app
 

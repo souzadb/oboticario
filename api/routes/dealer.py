@@ -85,16 +85,19 @@ def valid():
         retorno = db.execute(
         'SELECT cpf, password FROM dealer where cpf = ?;', (payload['cpf'],)
         ).fetchone()
+    except IntegrityError as e:
+            return 'ERROR IN SQL QUERY -> ' + e.args[0], 400
     except Exception as e:
-        print(e)
+        return 'Unknow error'
     else:
         if retorno is None:
-            print('nao achei ninguem')
-            return 'nao encontrado'
+            return 'Nobody with this CPF in database', 400
         else:
             if check_password_hash(retorno['password'], payload['password']):
                 token = create_access_token(identity=payload['cpf'])
                 return {'token': token}
+            else:
+                return 'Wrong Password', 400
 
     return 'Something was wrong', 200
 

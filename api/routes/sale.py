@@ -1,10 +1,9 @@
 from http import HTTPStatus
-from flask import Blueprint, json, request, app
+from flask import Blueprint, json, request, current_app
 from flasgger import swag_from
 from database.db import get_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
-
 
 sale_api = Blueprint('sale', __name__)
 
