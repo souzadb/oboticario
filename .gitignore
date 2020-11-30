@@ -1,4 +1,7 @@
 /venv
+/logs
+.sqlite
 
 *.pyc
 __pycache__/
+

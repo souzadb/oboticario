@@ -3,7 +3,7 @@ from flasgger import Swagger
 from api.routes.dealer import dealer_api
 from api.routes.sale import sale_api
 
-import os
+import datetime, os, logging
 
 
 def create_app():
@@ -21,6 +21,24 @@ def create_app():
 
     from database import db
     db.init_app(app)
+
+    @app.before_first_request
+    def before_first_request():
+        log_level = logging.INFO
+    
+        for handler in app.logger.handlers:
+            app.logger.removeHandler(handler)
+    
+        root = os.path.dirname(os.path.abspath(__file__))
+        logdir = os.path.join(root, 'logs')
+        if not os.path.exists(logdir):
+            os.mkdir(logdir)
+        log_file = os.path.join(logdir, 'app.log')
+        handler = logging.FileHandler(log_file)
+        handler.setLevel(log_level)
+        app.logger.addHandler(handler)
+    
+        app.logger.setLevel(log_level)
 
     return app
 

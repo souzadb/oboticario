@@ -27,7 +27,7 @@ def dealer():
     error = None
 
     db.execute(
-        '''INSERT INTO user (username, password)
+        '''INSERT INTO dealer (fullname, password)
             VALUES (?, ?)''', ('Mobeka', generate_password_hash('password'))
     )
     db.commit()
@@ -38,8 +38,9 @@ def dealer():
         'email': 'maria@gmail.com',
         'password': 'password'
     }
-    result = DealerModel(data)
-    return DealerSchema().dump(result), 200
+    result = json.dumps(data)
+    result = json.loads(data)
+    return result, 200
 
 @dealer_api.route('/valid', methods=['GET'])
 @swag_from({
