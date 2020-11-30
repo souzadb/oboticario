@@ -1,9 +1,10 @@
 from http import HTTPStatus
-from flask import Blueprint, json, request
+from flask import Blueprint, json, request, current_app
 from flasgger import swag_from
 from database.db import get_db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from sqlite3 import IntegrityError
 
 import requests
 
@@ -24,21 +25,37 @@ def dealer():
     API do desafio Backend do O Boticario
     ---
     """
-    db = get_db()
-    error = None
+    current_app.logger.info('Info level log')
+    current_app.logger.warning('Warning level log')
 
-    try:
-        db.execute(
-        '''INSERT INTO dealer (fullname, password, cpf, email)
-            VALUES (?, ?, ?, ?)''', ('Maria Maria', generate_password_hash('password'), '12312312323', 'maria@gmail.com')
-        )
-    except Exception as e:
-        print(e)
-        return 'Error'
+    if not request.args:
+        return 'No data was passed', 400
+
+    payload = request.args
+
+    if not 'fullname' in payload.keys():
+        return 'No name was passed', 400
+    elif not 'password' in payload.keys():
+        return 'No password was passed', 400
+    elif not 'cpf' in payload.keys():
+        return 'No cpf was passed', 400
+    elif not 'email' in payload.keys():
+        return 'No email was passed', 400
     else:
-        db.commit()
+        db = get_db()
+        try:
+            db.execute(
+            '''INSERT INTO dealer (fullname, password, cpf, email)
+                VALUES (?, ?, ?, ?)''', (payload['fullname'], payload['password'], payload['cpf'], payload['email'])
+            )
+        except IntegrityError as e:
+            return 'ERROR IN SQL QUERY -> ' + e.args[0], 400
+        except Exception as e:
+            return 'Unknow error'
+        else:
+            db.commit()
 
-    return 'Feito', 200
+        return 'Welcome {0}'.format(payload['fullname']), 200
 
 @dealer_api.route('/valid', methods=['POST'])
 @swag_from({
@@ -55,12 +72,15 @@ def valid():
     ---
     ---
     """
+    current_app.logger.info('Info level log')
+    current_app.logger.warning('Warning level log')
+
+    if not request.args:
+        return 'No data was passed', 400
+
     payload = request.args
 
-
     db = get_db()
-    error = None
-
     try:
         retorno = db.execute(
         'SELECT cpf, password FROM dealer where cpf = ?;', (payload['cpf'],)
@@ -76,11 +96,12 @@ def valid():
                 token = create_access_token(identity=payload['cpf'])
                 return {'token': token}
 
-    return 'Deu algum erro', 200
+    return 'Something was wrong', 200
 
 
 
 @dealer_api.route('/cashback', methods=['GET'])
+@jwt_required
 @swag_from({
     'responses': {
         HTTPStatus.OK.value: {
@@ -95,7 +116,13 @@ def cashback():
     ---
     ---
     """
+    current_app.logger.info('Info level log')
+    current_app.logger.warning('Warning level log')
+
+    current_user_cpf = get_jwt_identity()
+
     result = requests.get('https://mdaqk8ek5j.execute-api.us-east-1.amazonaws.com/v1/cashback?cpf=12312312323',
-                            headers = {'token': 'ZXPURQOARHiMc6Y0flhRC1LVlZQVFRnm'})
+                            headers={'token': 'ZXPURQOARHiMc6Y0flhRC1LVlZQVFRnm'})
     result = json.loads(result.text)
+    result['cpf'] = current_user_cpf
     return result, 200

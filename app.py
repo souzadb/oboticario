@@ -10,7 +10,8 @@ import datetime, os, logging
 def create_app():
     app = Flask(__name__)
 
-    app.config['JWT_SECRET_KEY'] = 'joker'  # Change this!
+    app.config['JWT_SECRET_KEY'] = 'joker'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
     jwt = JWTManager(app)
 
     app.config['SWAGGER'] = {
@@ -25,23 +26,7 @@ def create_app():
     from database import db
     db.init_app(app)
 
-    @app.before_first_request
-    def before_first_request():
-        log_level = logging.INFO
-    
-        for handler in app.logger.handlers:
-            app.logger.removeHandler(handler)
-    
-        root = os.path.dirname(os.path.abspath(__file__))
-        logdir = os.path.join(root, 'logs')
-        if not os.path.exists(logdir):
-            os.mkdir(logdir)
-        log_file = os.path.join(logdir, 'app.log')
-        handler = logging.FileHandler(log_file)
-        handler.setLevel(log_level)
-        app.logger.addHandler(handler)
-    
-        app.logger.setLevel(log_level)
+    # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
     return app
 
