@@ -1,6 +1,7 @@
 /venv
 /logs
-.sqlite
+*.sqlite
+*.log
 
 *.pyc
 __pycache__/
