@@ -46,7 +46,7 @@ def dealer():
         try:
             db.execute(
             '''INSERT INTO dealer (fullname, password, cpf, email)
-                VALUES (?, ?, ?, ?)''', (payload['fullname'], payload['password'], payload['cpf'], payload['email'])
+                VALUES (?, ?, ?, ?)''', (payload['fullname'], generate_password_hash(payload['password']), payload['cpf'], payload['email'])
             )
         except IntegrityError as e:
             return 'ERROR IN SQL QUERY -> ' + e.args[0], 400
@@ -80,6 +80,9 @@ def valid():
 
     payload = request.args
 
+    if not 'cpf' in payload.keys():
+        return 'No CPF was passed', 400
+
     db = get_db()
     try:
         retorno = db.execute(
@@ -95,8 +98,9 @@ def valid():
         else:
             if check_password_hash(retorno['password'], payload['password']):
                 token = create_access_token(identity=payload['cpf'])
-                return {'token': token}
+                return {'Authorization': token}
             else:
+                print(retorno['password'], payload['password'])
                 return 'Wrong Password', 400
 
     return 'Something was wrong', 200
