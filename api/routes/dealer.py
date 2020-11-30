@@ -1,8 +1,9 @@
 from http import HTTPStatus
-from flask import Blueprint, json
+from flask import Blueprint, json, request
 from flasgger import swag_from
 from database.db import get_db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
 import requests
 
@@ -26,23 +27,20 @@ def dealer():
     db = get_db()
     error = None
 
-    db.execute(
-        '''INSERT INTO dealer (fullname, password)
-            VALUES (?, ?)''', ('Mobeka', generate_password_hash('password'))
-    )
-    db.commit()
+    try:
+        db.execute(
+        '''INSERT INTO dealer (fullname, password, cpf, email)
+            VALUES (?, ?, ?, ?)''', ('Maria Maria', generate_password_hash('password'), '12312312323', 'maria@gmail.com')
+        )
+    except Exception as e:
+        print(e)
+        return 'Error'
+    else:
+        db.commit()
 
-    data = {
-        'name': 'Maria Marcia',
-        'cpf': '123112312323',
-        'email': 'maria@gmail.com',
-        'password': 'password'
-    }
-    result = json.dumps(data)
-    result = json.loads(data)
-    return result, 200
+    return 'Feito', 200
 
-@dealer_api.route('/valid', methods=['GET'])
+@dealer_api.route('/valid', methods=['POST'])
 @swag_from({
     'responses': {
         HTTPStatus.OK.value: {
@@ -57,26 +55,28 @@ def valid():
     ---
     ---
     """
+    payload = request.args
+
+
     db = get_db()
     error = None
 
-    retorno = db.execute(
-        'SELECT * FROM user'
-    ).fetchall()
-    
-    if retorno is None:
-        print('tabela vazia')
+    try:
+        retorno = db.execute(
+        'SELECT cpf, password FROM dealer where cpf = ?;', (payload['cpf'],)
+        ).fetchone()
+    except Exception as e:
+        print(e)
     else:
-        print('tem algo aqui')
-        for line in retorno:
-            print(line, line[0], line[1], line[2])
+        if retorno is None:
+            print('nao achei ninguem')
+            return 'nao encontrado'
+        else:
+            if check_password_hash(retorno['password'], payload['password']):
+                token = create_access_token(identity=payload['cpf'])
+                return {'token': token}
 
-    data = {
-        'cpf': '12312312332',
-        'password': 'password'
-    }
-    result = json.dumps(data)
-    return result, 200
+    return 'Deu algum erro', 200
 
 
 

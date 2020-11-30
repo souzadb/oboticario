@@ -2,6 +2,7 @@ from flask import Flask
 from flasgger import Swagger
 from api.routes.dealer import dealer_api
 from api.routes.sale import sale_api
+from flask_jwt_extended import JWTManager
 
 import datetime, os, logging
 
@@ -9,11 +10,13 @@ import datetime, os, logging
 def create_app():
     app = Flask(__name__)
 
+    app.config['JWT_SECRET_KEY'] = 'joker'  # Change this!
+    jwt = JWTManager(app)
+
     app.config['SWAGGER'] = {
         'title':   'O Boticario - Desafio Backend'
     }
     app.config.from_mapping(DATABASE=os.path.join('./database', 'boticario.sqlite'))
-
     swagger = Swagger(app)
 
     app.register_blueprint(dealer_api, url_prefix='/api/dealer')

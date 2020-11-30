@@ -4,10 +4,9 @@ from flasgger import swag_from
 from database.db import get_db
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import sqlite3
-
 
 sale_api = Blueprint('sale', __name__)
+
 
 @sale_api.route('/new', methods=['POST'])
 @swag_from({
