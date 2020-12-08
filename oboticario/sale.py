@@ -31,10 +31,10 @@ def new_sale():
 
     current_user_cpf = get_jwt_identity()
 
-    if not request.args:
-        return 'No data was passed', 400
+    if not request.get_json():
+        return 'No json was passed', 400
 
-    payload = request.args
+    payload = request.get_json()
 
     if not 'cod' in payload.keys():
         return 'No cod was passed', 400

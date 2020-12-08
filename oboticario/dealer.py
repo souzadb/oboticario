@@ -10,7 +10,7 @@ import requests
 
 dealer_api = Blueprint('dealer', __name__)
 
-@dealer_api.route('/new', methods=['GET'])
+@dealer_api.route('/new', methods=['POST'])
 @swag_from({
     'responses': {
         HTTPStatus.OK.value: {
@@ -28,10 +28,10 @@ def dealer():
     current_app.logger.info('Info level log')
     current_app.logger.warning('Warning level log')
 
-    if not request.args:
-        return 'No data was passed', 400
+    if not request.get_json():
+        return 'No json was passed', 400
 
-    payload = request.args
+    payload = request.get_json()
 
     if not 'fullname' in payload.keys():
         return 'No name was passed', 400
@@ -75,13 +75,15 @@ def valid():
     current_app.logger.info('Info level log')
     current_app.logger.warning('Warning level log')
 
-    if not request.args:
-        return 'No data was passed', 400
+    if not request.get_json():
+        return 'No json was passed', 400
 
-    payload = request.args
+    payload = request.get_json()
 
     if not 'cpf' in payload.keys():
         return 'No CPF was passed', 400
+    if not 'password' in payload.keys():
+        return 'No Password was passed', 400
 
     db = get_db()
     try:
